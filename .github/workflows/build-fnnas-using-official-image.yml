@@ -245,8 +245,6 @@ jobs:
           echo "=== Debug Information ==="
           echo "Builder directory:"
           ls -la /builder/fnnas/
-          echo "Workspace directory:"
-          ls -la ${{ github.workspace }}/fnnas/
           echo "FNAS_FILE_PATH env: ${{ env.FNAS_FILE_PATH }}"
           echo "FNAS_DIR_PATH env: ${{ env.FNAS_DIR_PATH }}"
           echo "========================"
