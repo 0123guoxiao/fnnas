@@ -253,7 +253,7 @@ jobs:
         if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
         uses: ophub/fnnas@main
         with:
-          fnnas_path: ${{ env.FNAS_FILE_PATH }}  # 使用绝对文件路径
+          fnnas_path: "/builder/fnnas/fnnas-official-arm64-image_rockchip_296.img.xz"  # 使用绝对文件路径
           fnnas_board: ${{ inputs.fnnas_board }}
           fnnas_kernel: ${{ inputs.fnnas_kernel }}
           auto_kernel: ${{ inputs.auto_kernel }}
