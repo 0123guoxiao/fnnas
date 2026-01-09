@@ -221,16 +221,41 @@ jobs:
           [[ "${?}" -ne "0" ]] && echo "Download failed." && exit 1
 
           echo "build_tag=fnnas_${{ inputs.fnnas_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
-          ln -sf /builder/fnnas ${{ github.workspace }}/fnnas
-          ln -sf /builder/fnnas /home/runner/work/_actions/ophub/fnnas/main/fnnas
+          # 设置环境变量供后续步骤使用 - 使用绝对路径
+          echo "FNAS_FILE_PATH=/builder/fnnas/${fnnas_filename}" >> ${GITHUB_ENV}
+          echo "FNAS_DIR_PATH=/builder/fnnas" >> ${GITHUB_ENV}
+          
+          # 创建 workspace 中的副本（避免软链接问题）
+          mkdir -p ${{ github.workspace }}/fnnas
+          cp /builder/fnnas/${fnnas_filename} ${{ github.workspace }}/fnnas/
+          
+          # 验证文件复制
+          echo "Verifying file copy to workspace:"
+          ls -la ${{ github.workspace }}/fnnas/
+          if [[ ! -f ${{ github.workspace }}/fnnas/${fnnas_filename} ]]; then
+            echo "Error: Failed to copy file to workspace"
+            exit 1
+          fi
 
           echo "status=success" >> ${GITHUB_OUTPUT}
+
+      - name: Debug file locations
+        if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
+        run: |
+          echo "=== Debug Information ==="
+          echo "Builder directory:"
+          ls -la /builder/fnnas/
+          echo "Workspace directory:"
+          ls -la ${{ github.workspace }}/fnnas/
+          echo "FNAS_FILE_PATH env: ${{ env.FNAS_FILE_PATH }}"
+          echo "FNAS_DIR_PATH env: ${{ env.FNAS_DIR_PATH }}"
+          echo "========================"
 
       - name: Packaging fnnas
         if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
         uses: ophub/fnnas@main
         with:
-          fnnas_path: fnnas/*.img.xz
+          fnnas_path: ${{ env.FNAS_FILE_PATH }}  # 使用绝对文件路径
           fnnas_board: ${{ inputs.fnnas_board }}
           fnnas_kernel: ${{ inputs.fnnas_kernel }}
           auto_kernel: ${{ inputs.auto_kernel }}
